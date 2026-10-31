@@ -1,41 +1,64 @@
 #!/usr/bin/env python3
-"""Regenerate deterministic, explicitly synthetic Harbor Trust fixtures."""
-from pathlib import Path
-import subprocess
+"""Regenerate the fictional Harbor Trust synthetic fixtures.
 
-ROOT = Path(__file__).resolve().parents[1]
+All output is deterministic fiction: synthetic keys, branch codes,
+amounts, dates and tokens. No real names, accounts or institutions.
+Regenerates app/data/ascii/*.dat byte-identically; use
+`iconv -f UTF-8 -t CP037` to reproduce the app/data/ebcdic counterparts
+(fixed width preserved, line separators omitted).
+"""
 
-def account_record(i: int, kind: str) -> str:
-    key = f"SYN{i:09d}"
-    branch = "BR" + chr(65 + i % 26)
-    amount = f"{(i * 7919) % 99_999_999:08d}"
-    status = ["ACTIVE", "DORMANT", "BLOCKED"][i % 3].ljust(8)
-    token = f"TOK{i % 999_999:06d}".ljust(8)
-    date = ["20261231", "20260228", "20240131", "20251130"][i % 4]
-    record = kind + key[1:] + branch + amount + status + token + date
-    return record.ljust(119) + ("Y" if i % 89 == 0 else "N") + " " * 40
+import os
 
-def write_pair(name: str, rows: list[str]) -> None:
-    text = "\n".join(rows) + "\n"
-    (ROOT / "app/data/ascii" / name).write_text(text, encoding="ascii")
-    ebcdic = subprocess.run(
-        ["iconv", "-f", "ASCII", "-t", "CP037"],
-        input=text.replace("\n", "").encode("ascii"),
-        stdout=subprocess.PIPE,
-        check=True,
-    ).stdout
-    (ROOT / "app/data/ebcdic" / (Path(name).stem + ".ebc")).write_bytes(ebcdic)
+HERE = os.path.dirname(os.path.abspath(__file__))
+ASCII = os.environ.get(
+    "FIXTURE_DIR",
+    os.path.normpath(os.path.join(HERE, "..", "app", "data", "ascii")),
+)
 
-for filename, kind in {
-    "accounts.dat": "A",
-    "transactions.dat": "T",
-    "checks.dat": "C",
-    "loans.dat": "L",
-}.items():
-    write_pair(filename, [account_record(i, kind) for i in range(1, 1201)])
+DATES = ["20260228", "20240131", "20251130", "20261231"]
+STATUSES = ["DORMANT ", "BLOCKED ", "ACTIVE  "]
 
-rates = []
-for currency, rate in [("EUR", ".9234"), ("GBP", ".7912"), ("JPY", "149.2500")]:
-    scaled = {".9234": "00009234", ".7912": "00007912", "149.2500": "01492500"}[rate]
-    rates.extend((f"AYN{i:09d}BRA{scaled}ACTIVE  USD{currency}{rate:>8}20260101".ljust(160)) for i in range(1, 401))
-write_pair("fx-rates.dat", rates)
+
+def ledger_row(prefix, i):
+    seq = i + 1
+    branch = "BR" + chr(ord("A") + (seq % 26))
+    amount = "%08d" % (7919 * seq)
+    status = STATUSES[i % 3]
+    date = DATES[i % 4]
+    flag = "Y" if seq >= 89 and (seq - 89) % 89 == 0 else "N"
+    row = ("%-1sYN%09d%-3s%-8s%-8s%-3s%06d%-8s"
+           % (prefix, seq, branch, amount, status, "TOK", seq, date))
+    return row.ljust(119) + flag + " " * 40
+
+
+FX_BLOCKS = [
+    ("USDEUR", "00009234", "   .9234"),
+    ("USDGBP", "00007912", "   .7912"),
+    ("USDJPY", "01492500", "149.2500"),
+]
+
+
+def fx_row(j, pair, amount, rate8):
+    seq = j + 1
+    row = ("AYN%09dBRA%-8s%-8s%-6s%-8s%-8s"
+           % (seq, amount, "ACTIVE  ", pair, rate8, "20260101"))
+    return row.ljust(160)
+
+
+def main():
+    os.makedirs(ASCII, exist_ok=True)
+    for name, prefix in [("accounts", "A"), ("transactions", "T"),
+                         ("checks", "C"), ("loans", "L")]:
+        with open(os.path.join(ASCII, name + ".dat"), "w") as fh:
+            for i in range(1200):
+                fh.write(ledger_row(prefix, i) + "\n")
+    with open(os.path.join(ASCII, "fx-rates.dat"), "w") as fh:
+        for pair, amount, rate8 in FX_BLOCKS:
+            for j in range(400):
+                fh.write(fx_row(j, pair, amount, rate8) + "\n")
+    print("wrote 5 fixtures to", ASCII)
+
+
+if __name__ == "__main__":
+    main()
