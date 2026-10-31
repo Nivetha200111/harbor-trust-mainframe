@@ -1,0 +1,4 @@
+       01 ERROR-CONTEXT.
+          05 ERROR-CODE PIC X(8).
+          05 ERROR-TEXT PIC X(80).
+          05 ERROR-COUNT PIC 9(7) COMP-5.

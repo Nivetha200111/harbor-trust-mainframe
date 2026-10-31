@@ -1,0 +1,1 @@
+       01 PREFIXED-ACCT-KEY PIC X(12).

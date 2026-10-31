@@ -1,0 +1,6 @@
+       01 AUDIT-RECORD.
+          05 AUDIT-ENTITY PIC X(12).
+          05 AUDIT-ACTION PIC X(8).
+          05 AUDIT-OLD-VALUE PIC X(20).
+          05 AUDIT-NEW-VALUE PIC X(20).
+          05 AUDIT-DATE PIC 9(8).

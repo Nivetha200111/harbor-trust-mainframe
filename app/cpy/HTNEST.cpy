@@ -1,0 +1,2 @@
+       COPY HTSTATUS.
+       COPY HTERROR.

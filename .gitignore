@@ -1,0 +1,6 @@
+*.o
+*.so
+*.dll
+*.exe
+*.dat.tmp
+.DS_Store

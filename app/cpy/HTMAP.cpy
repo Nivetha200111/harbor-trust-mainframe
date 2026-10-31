@@ -1,0 +1,2 @@
+       01 MAP-MESSAGE PIC X(60).
+       01 MAP-ACCOUNT PIC X(12).

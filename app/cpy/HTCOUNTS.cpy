@@ -1,0 +1,5 @@
+       01 RUN-COUNTS.
+          05 RUN-READ PIC 9(9) COMP-5.
+          05 RUN-WRITTEN PIC 9(9) COMP-5.
+          05 RUN-REJECTED PIC 9(9) COMP-5.
+          05 RUN-UPDATED PIC 9(9) COMP-5.

@@ -1,0 +1,1 @@
+Maps are source-level BMS examples. HTMAPS includes inquiry, transfer, and card-control layouts; symbolic COBOL fields are represented in each CICS module. Expand symbolic map copybooks with the CICS BMS assembler before deployment.

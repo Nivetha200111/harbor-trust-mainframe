@@ -1,0 +1,5 @@
+       01 GL-RECORD.
+          05 GL-ACCOUNT PIC X(10).
+          05 GL-DEBIT PIC S9(11)V99 COMP-3.
+          05 GL-CREDIT PIC S9(11)V99 COMP-3.
+          05 GL-CURRENCY PIC X(3).
